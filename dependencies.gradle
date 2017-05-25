@@ -54,6 +54,8 @@ project.ext {
             "fastjson"                    : "com.alibaba:fastjson:1.2.31",
             "butterknife"                 : "com.jakewharton:butterknife:${butterKnifeVersion}",
             "butterknife-compiler"        : "com.jakewharton:butterknife-compiler:${butterKnifeVersion}",
-            "retrofit2-fastjson-converter": "com.github.BaronZ88:Retrofit2-FastJson-Converter:1.2"
+            "retrofit2-fastjson-converter": "com.github.BaronZ88:Retrofit2-FastJson-Converter:1.2",
+
+            "fragmentation"               :  'me.yokeyword:fragmentation:0.10.5'
     ]
 }

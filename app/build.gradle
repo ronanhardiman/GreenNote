@@ -36,7 +36,7 @@ dependencies {
     compile rootProject.ext.dependencies["okhttp3-logging-interceptor"]
     compile rootProject.ext.dependencies["stetho"]
     compile rootProject.ext.dependencies["stetho-okhttp3"]
-
+    compile rootProject.ext.dependencies["fragmentation"]
     compile 'com.android.support:support-vector-drawable:25.3.1'
     testCompile 'junit:junit:4.12'
 }
