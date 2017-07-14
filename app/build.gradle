@@ -22,21 +22,23 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
     compile rootProject.ext.dependencies["support-v4"]
     compile rootProject.ext.dependencies["appcompat-v7"]
     compile rootProject.ext.dependencies["design"]
     compile rootProject.ext.dependencies["recyclerview"]
     compile rootProject.ext.dependencies["cardview"]
-
     compile rootProject.ext.dependencies["okhttp3-logging-interceptor"]
     compile rootProject.ext.dependencies["stetho"]
     compile rootProject.ext.dependencies["stetho-okhttp3"]
     compile rootProject.ext.dependencies["fragmentation"]
     compile 'com.android.support:support-vector-drawable:25.3.1'
     testCompile 'junit:junit:4.12'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.0'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    compile 'com.jakewharton.timber:timber:4.5.1'
+
 }
