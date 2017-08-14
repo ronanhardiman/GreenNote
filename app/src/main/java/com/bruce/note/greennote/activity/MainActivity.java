@@ -2,6 +2,7 @@ package com.bruce.note.greennote.activity;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -14,6 +15,11 @@ import android.widget.Toast;
 
 import com.bruce.note.greennote.R;
 import com.bruce.note.greennote.utils.AppPrefs;
+import com.bruce.note.greennote.utils.RestUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,10 +35,10 @@ import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView mTextMessage;
-    private Button button,button1;
+    private Button button, button1, button2, button3,button4;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private final static String REMAIN_TIME = "remain_time";
 
@@ -61,15 +67,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int ITEM_COUNT = 30;
 
     private void resetTimeCount() {
-        AppPrefs.setLong(REMAIN_TIME,0L);
+        AppPrefs.setLong(REMAIN_TIME, 0L);
     }
+
     private void initTimeCount() {
         button.setText("倒计时30S");
         button1.setText("暂停");
         final Long remain_time = AppPrefs.getLong(REMAIN_TIME);
         final AtomicLong atomicLong = new AtomicLong(remain_time);
 //        COUNT = remain_time;
-        Timber.d("initTimeCount thread %s, remain_time: %s",Thread.currentThread().getName(),remain_time);
+        Timber.d("initTimeCount thread %s, remain_time: %s", Thread.currentThread().getName(), remain_time);
         Observable.interval(0, 1, TimeUnit.SECONDS)
                 .take(COUNT)
                 .map(new Function<Long, Long>() {
@@ -92,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void accept(@io.reactivex.annotations.NonNull Disposable disposable) throws Exception {
                 compositeDisposable.add(disposable);
-                Timber.d("accept thread %s,",Thread.currentThread().getName());
+                Timber.d("accept thread %s,", Thread.currentThread().getName());
             }
         }).observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
@@ -100,29 +107,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
                         compositeDisposable.add(d);
-                        Timber.d("onSubscribe thread %s,",Thread.currentThread().getName());
+                        Timber.d("onSubscribe thread %s,", Thread.currentThread().getName());
                     }
 
                     @Override
                     public void onNext(@io.reactivex.annotations.NonNull Long aLong) {
-                        Timber.d("onNext aLong: %s thread %s,", aLong,Thread.currentThread().getName());
+                        Timber.d("onNext aLong: %s thread %s,", aLong, Thread.currentThread().getName());
                         long l = atomicLong.incrementAndGet();
-                        button.setText(l+"=秒");
+                        button.setText(l + "=秒");
                         Long totalCount = remain_time + aLong;
                         if (l >= ITEM_COUNT) {
                             clearDis(aLong);
                             resetTimeCount();
                             showDialog();
-                            Toast.makeText(MainActivity.this, "时间到："+l, Toast.LENGTH_SHORT).show();
-                        }else {
-                            AppPrefs.setLong(REMAIN_TIME,l);
+                            Toast.makeText(MainActivity.this, "时间到：" + l, Toast.LENGTH_SHORT).show();
+                        } else {
+                            AppPrefs.setLong(REMAIN_TIME, l);
                         }
-                        Timber.d("Apply aLong: %s thread %s,l: %s,", aLong,Thread.currentThread().getName(),l);
+                        Timber.d("Apply aLong: %s thread %s,l: %s,", aLong, Thread.currentThread().getName(), l);
                     }
 
                     @Override
                     public void onError(@io.reactivex.annotations.NonNull Throwable e) {
-                        Timber.e(e,"onError");
+                        Timber.e(e, "onError");
                     }
 
                     @Override
@@ -144,7 +151,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setNegativeButton("再看一小时", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        initTimeCount();
+//                        initTimeCount();
+                        RestUtils.onStart();
                     }
                 })
                 .show();
@@ -168,6 +176,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         button.setText("倒计时30S");
         button1.setText("暂停");
 
+        button2 = (Button) findViewById(R.id.button2);
+        button2.setOnClickListener(this);
+
+        button3 = (Button) findViewById(R.id.button3);
+        button3.setOnClickListener(this);
+
+        button4 = (Button) findViewById(R.id.button4);
+        button4.setOnClickListener(this);
+
+        EventBus.getDefault().register(this);
+
+        button2.setText("倒计时30s 点击开始");
+        button3.setText("暂停");
     }
 
     @Override
@@ -184,20 +205,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 clearDis(aLong);
                 if (button1.getText().equals("暂停")) {
                     button1.setText("恢复");
-                }else {
+                } else {
                     initTimeCount();
                     button1.setText("暂停");
                 }
                 break;
             case R.id.button2:
-                initTimeCount();
+                RestUtils.init();
+                break;
+            case R.id.button3:
+                if (button3.getText().equals("暂停")) {
+                    RestUtils.onPause();
+                    button3.setText("恢复");
+                } else {
+                    RestUtils.onStart();
+                    button3.setText("暂停");
+                }
+                break;
+            case R.id.button4:
+                startActivity(new Intent(MainActivity.this, ActivityBlur.class));
                 break;
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        RestUtils.onStart();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        RestUtils.onPause();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTimeEvent(RestUtils.EventRest rest) {
+        if (rest.tag == 1) {
+            showDialog();
+        } else {
+            button2.setText(RestUtils.getRemainTime() + "秒");
+        }
+    }
+
     private void clearDis(Long along) {
-        Timber.d("clearDis long :%s,",along);
+        Timber.d("clearDis long :%s,", along);
         compositeDisposable.clear();
-        AppPrefs.setLong(REMAIN_TIME,along);
+        AppPrefs.setLong(REMAIN_TIME, along);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }

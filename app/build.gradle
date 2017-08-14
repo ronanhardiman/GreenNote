@@ -35,10 +35,13 @@ dependencies {
     compile rootProject.ext.dependencies["stetho"]
     compile rootProject.ext.dependencies["stetho-okhttp3"]
     compile rootProject.ext.dependencies["fragmentation"]
+
     compile 'com.android.support:support-vector-drawable:25.3.1'
     testCompile 'junit:junit:4.12'
+
     compile 'io.reactivex.rxjava2:rxjava:2.1.0'
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
     compile 'com.jakewharton.timber:timber:4.5.1'
-
+    compile 'org.greenrobot:eventbus:3.0.0'
+    compile 'com.github.pinguo-zhouwei:EasyBlur:v1.0.0'
 }
